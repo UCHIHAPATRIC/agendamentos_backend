@@ -1,7 +1,7 @@
 # python manage.py createsuperuser
 # python manage.py runserver
 # http://localhost:8000/admin
-#
+# http://localhost:8000/api/dashboard/resumo/
 #
 #
 #

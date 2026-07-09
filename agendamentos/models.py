@@ -30,6 +30,8 @@ class Agendamento(models.Model):
         choices=StatusChoices.choices, 
         default=StatusChoices.A_CONFIRMAR
     )
+    # Novo campo adicionado para mapear o "notes" do front-end
+    observacoes = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.paciente.nome} - {self.data_hora}"
