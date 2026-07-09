@@ -80,3 +80,52 @@ def gerenciar_agendamentos(request):
         # Retorna o agendamento acabado de criar no formato do formulário
         serializer = AgendamentoSerializer(novo_agendamento)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+@api_view(['PUT', 'DELETE'])
+def detalhar_agendamento(request, pk):
+    try:
+        # Tenta encontrar o agendamento pelo ID (pk = primary key)
+        agendamento = Agendamento.objects.get(pk=pk)
+    except Agendamento.DoesNotExist:
+        return Response({"erro": "Agendamento não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        
+    # --- LÓGICA DE EXCLUSÃO (DELETE) ---
+    if request.method == 'DELETE':
+        agendamento.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+        
+    # --- LÓGICA DE ATUALIZAÇÃO (PUT) ---
+    elif request.method == 'PUT':
+        dados = request.data
+        
+        # 1. Atualiza Paciente
+        nome_paciente = dados.get('patientName')
+        if nome_paciente:
+            paciente, _ = Paciente.objects.get_or_create(nome=nome_paciente)
+            agendamento.paciente = paciente
+            
+        # 2. Atualiza Serviço
+        nome_servico = dados.get('service')
+        if nome_servico:
+            servico, _ = Servico.objects.get_or_create(nome=nome_servico, defaults={'preco': 0.00})
+            agendamento.servico = servico
+            
+        # 3. Atualiza Data e Hora
+        str_data = dados.get('date') 
+        str_hora = dados.get('time')
+        if str_data and str_hora:
+            try:
+                data_hora_nativa = datetime.strptime(f"{str_data} {str_hora}", "%Y-%m-%d %H:%M")
+                agendamento.data_hora = timezone.make_aware(data_hora_nativa)
+            except ValueError:
+                return Response({"erro": "Formato de data ou hora inválido."}, status=status.HTTP_400_BAD_REQUEST)
+                
+        # 4. Atualiza Observações
+        if 'notes' in dados:
+            agendamento.observacoes = dados.get('notes')
+            
+        agendamento.save()
+        
+        # Retorna o agendamento atualizado
+        serializer = AgendamentoSerializer(agendamento)
+        return Response(serializer.data)
