@@ -1,13 +1,19 @@
+# python manage.py makemigrations
+# python manage.py migrate
+# python manage.py runserver
+
 from django.db import models
 
 class Paciente(models.Model):
     nome = models.CharField(max_length=255)
-    telefone = models.CharField(max_length=20)
-    data_cadastro = models.DateTimeField(auto_now_add=True)
+    cpf = models.CharField(max_length=11, blank=True, null=True)
+    data_nascimento = models.DateField(blank=True, null=True)
+    genero = models.CharField(max_length=50, blank=True, null=True)
+    telefone = models.CharField(max_length=20, blank=True, null=True)
 
     def __str__(self):
         return self.nome
-
+    
 class Servico(models.Model):
     nome = models.CharField(max_length=100)
     preco = models.DecimalField(max_digits=8, decimal_places=2)
@@ -30,7 +36,6 @@ class Agendamento(models.Model):
         choices=StatusChoices.choices, 
         default=StatusChoices.A_CONFIRMAR
     )
-    # Novo campo adicionado para mapear o "notes" do front-end
     observacoes = models.TextField(blank=True, null=True)
 
     def __str__(self):
